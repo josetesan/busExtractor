@@ -1,0 +1,21 @@
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '* '
+spring:
+    application:
+        name: BusExtractor
+    boot:
+        admin:
+            client:
+                url: http://localhost:9090
+    rabbitmq:
+        host: 192.168.1.36
+    datasource:
+      driver-class-name: org.postgresql.Driver
+      url: jdbc:postgresql://192.168.1.36:5432/postgres
+      username: postgres
+      password: mysecretpassword
+
+  #      data: install.sql
