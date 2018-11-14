@@ -1,19 +1,19 @@
 package com.josetesan.busExtractor.config;
 
 import com.josetesan.busExtractor.beans.RowEventMapper;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.amqp.dsl.Amqp;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.jdbc.JdbcPollingChannelAdapter;
-import org.springframework.integration.json.ObjectToJsonTransformer;
+import org.springframework.integration.kafka.outbound.KafkaProducerMessageHandler;
 import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.MessageHandler;
 
 import javax.sql.DataSource;
 
@@ -23,20 +23,16 @@ import javax.sql.DataSource;
 public class DslConfiguration {
 
 
-    private static final String SELECT_QUERY  = "select * from databus_event where processed is false";
-
-
-    @Autowired
-    private DataSource datasource;
+    private static final String SELECT_QUERY  = "select * from databus_event where processed = 0";
 
 
     @Bean
-    public JdbcPollingChannelAdapter jdbPollingChannelAdapter() {
+    public JdbcPollingChannelAdapter jdbPollingChannelAdapter(DataSource datasource) {
 
         JdbcPollingChannelAdapter jdbcPollingChannelAdapter = new JdbcPollingChannelAdapter(datasource, SELECT_QUERY);
 
         jdbcPollingChannelAdapter.setRowMapper(new RowEventMapper());
-        jdbcPollingChannelAdapter.setUpdateSql("UPDATE DATABUS_EVENT SET PROCESSED=true where ID in (:id)");
+        jdbcPollingChannelAdapter.setUpdateSql("UPDATE DATABUS_EVENT SET PROCESSED = 1 where ID in (:id)");
         jdbcPollingChannelAdapter.setMaxRows(5);
 
         return jdbcPollingChannelAdapter;
@@ -45,9 +41,9 @@ public class DslConfiguration {
 
 
     @Bean
-    public IntegrationFlow pollingAdapterFlow() {
+    public IntegrationFlow pollingAdapterFlow(JdbcPollingChannelAdapter jdbcPollingChannelAdapter) {
         return IntegrationFlows
-                .from(jdbPollingChannelAdapter(),e -> e.poller(poller()))
+                .from(jdbcPollingChannelAdapter,e -> e.poller(poller()))
                 .channel(c -> c.flux("pollingEvents"))
                 .get();
     }
@@ -79,16 +75,20 @@ public class DslConfiguration {
     }
 
 
+//    @Transformer(inputChannel = "event", outputChannel = "avro")
+//    @Bean
+//    public Message tranformObject(Message source) {
+//
+//    }
 
+
+    @ServiceActivator(inputChannel = "avro")
     @Bean
-    public IntegrationFlow amqpOutboundFlow(AmqpTemplate amqpTemplate) {
-        return IntegrationFlows.from("event")
-                .transform(new ObjectToJsonTransformer())
-                .handle(Amqp
-                        .outboundAdapter(amqpTemplate)
-//                        .routingKeyExpression("headers.routingKey")
-                        .exchangeName("jdbc-event"))
-                .get();
+    public MessageHandler handler(KafkaTemplate<String, String> kafkaTemplate) {
+        KafkaProducerMessageHandler<String, String> handler =
+                new KafkaProducerMessageHandler<>(kafkaTemplate);
+        handler.setTopicExpression(new LiteralExpression("jdbc-topc"));
+        return handler;
     }
 
 }

@@ -17,5 +17,16 @@ spring:
       url: jdbc:postgresql://192.168.1.36:5432/postgres
       username: postgres
       password: mysecretpassword
+      schema: schema.sql
+      data: data.sql
+      initialization-mode: always
 
   #      data: install.sql
+    cloud:
+      stream:
+        kafka:
+          binder:
+            brokers: http://192.168.1.36:9091
+    kafka:
+      bootstrap-servers: http://192.168.1.36:9091
+

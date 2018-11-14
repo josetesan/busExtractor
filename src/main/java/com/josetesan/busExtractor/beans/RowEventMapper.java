@@ -12,9 +12,16 @@ public class RowEventMapper implements RowMapper<RowEvent> {
     @Timed
     public RowEvent mapRow(ResultSet resultSet, int i) throws SQLException {
         return RowEvent.builder()
-                .id(resultSet.getLong("id"))
-                .create_date(resultSet.getTimestamp("create_date"))
+                .sec(resultSet.getLong("sec"))
+                .eventDate(resultSet.getTimestamp("event_date"))
+                .origen(resultSet.getString("origen"))
+                .eventType(resultSet.getString("tipo_evento"))
+                .campoModif(resultSet.getString("campo_modif"))
+                .pks(resultSet.getString("pks"))
+                .vaVn(resultSet.getString("va_vn"))
                 .payload(resultSet.getString("payload"))
+                .processed(resultSet.getInt("processed"))
                 .build();
     }
 }
+

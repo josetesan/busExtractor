@@ -9,7 +9,14 @@ import java.util.Date;
 @Builder
 public class RowEvent {
 
-    private Long id;
-    private Date create_date;
+    private Long sec;
+    private Date eventDate;
+    private String origen;
+    private String eventType;
+    private String campoModif;
+    private String pks;
+    private String vaVn;
     private String payload;
+    private Integer processed;
 }
+
