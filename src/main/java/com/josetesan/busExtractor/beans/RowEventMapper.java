@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class RowEventMapper implements RowMapper<RowEvent> {
 
     @Override
-    @Timed
+    @Timed(value = "oracle.mapper.row")
     public RowEvent mapRow(ResultSet resultSet, int i) throws SQLException {
         return RowEvent.builder()
                 .sec(resultSet.getLong("sec"))
