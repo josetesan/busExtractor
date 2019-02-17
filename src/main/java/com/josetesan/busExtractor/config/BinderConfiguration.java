@@ -14,9 +14,9 @@ import org.springframework.kafka.core.ProducerFactory;
 public class BinderConfiguration {
 
     @Bean
-    public KafkaTemplate kafkaTemplate(ProducerFactory<String, GenericRecord> producerFactory) {
+    public KafkaTemplate<String, GenericRecord> kafkaTemplate(ProducerFactory<String, GenericRecord> producerFactory) {
 
-        return new KafkaTemplate(producerFactory);
+        return new KafkaTemplate<>(producerFactory);
 
     }
 
@@ -28,6 +28,6 @@ public class BinderConfiguration {
      */
     @Bean
     public ProducerFactory<String, GenericRecord> producerFactory() {
-        return new DefaultKafkaProducerFactory<String, GenericRecord>(null, new StringSerializer(), new KafkaAvroSerializer());
+        return new DefaultKafkaProducerFactory(null, new StringSerializer(), new KafkaAvroSerializer());
     }
 }

@@ -1,6 +1,7 @@
 package com.josetesan.busExtractor.config;
 
 import com.josetesan.busExtractor.beans.RowEventMapper;
+import org.apache.avro.generic.GenericRecord;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.expression.common.LiteralExpression;
@@ -84,10 +85,10 @@ public class DslConfiguration {
 
     @ServiceActivator(inputChannel = "avro")
     @Bean
-    public MessageHandler handler(KafkaTemplate<String, String> kafkaTemplate) {
-        KafkaProducerMessageHandler<String, String> handler =
+    public MessageHandler handler(KafkaTemplate<String, GenericRecord> kafkaTemplate) {
+        KafkaProducerMessageHandler<String, GenericRecord> handler =
                 new KafkaProducerMessageHandler<>(kafkaTemplate);
-        handler.setTopicExpression(new LiteralExpression("jdbc-topc"));
+        handler.setTopicExpression(new LiteralExpression("jdbc-topic"));
         return handler;
     }
 
